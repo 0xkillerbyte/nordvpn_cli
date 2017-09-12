@@ -12,3 +12,4 @@ nordvpn_cli.py --country=IT --print-servers         Prints all Standard VPN Ital
 nordvpn_cli.py --country=IT                         Connects to the best Italian Server
 nordvpn_cli.py --country-codes                      Prints ISO 3166-1 alpha2 table
 nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn   Connects to specified server descriptor
+

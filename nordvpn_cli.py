@@ -35,7 +35,7 @@ from terminaltables import AsciiTable
 __VERSION__ = "0.0.1alpha"
 __AUTHOR__ = "killerbyte"
 __AUTHOR_EMAIL__ = "killerbyte[at]protonmail[dot]com"
-__AUTHOR_TWITTER__ ="@killerbyte"
+__AUTHOR_TWITTER__ = "@killerbyte"
 
 __INFO_MSG__ = 0
 __WARING_MSG__ = 1
@@ -114,16 +114,17 @@ __NORDVPN_SERVER_COUNTRY__ = {'ch': 'Switzerland',
                               'se': 'Sweden',
                               'il': 'Israel'}
 
-__NORDVPN_SERVER_TYPES__ = ['Double VPN',
-                            'Anti DDoS',
-                            'Dedicated IP servers',
-                            'Standard VPN servers',
-                            'P2P',
-                            'Obfuscated Servers']
+__NORDVPN_SERVER_TYPES__ = {'dvpn':'Double VPN',
+                            'addos':'Anti DDoS',
+                            'dedip':'Dedicated IP servers',
+                            'svpn':'Standard VPN servers',
+                            'p2p':'P2P',
+                            'obvpn':'Obfuscated Servers'}
 
 
 nordvpn_country = None
 nordvpn_server = None
+nordvpn_type  = None
 print_servers = None
 print_country_codes = None
 
@@ -146,15 +147,24 @@ Sintax: nordvpn_cli.py [--country=COUNTRY][--print-servers][--country-codes][--s
 
 Options:
 --country           Uses the server with lowest load of the selected Country
+--type              Select the server type. Available types:
+                    dvpn  = Double VPN
+                    addos = Anti DDoS
+                    dedip = Dedicated IP servers
+                    svpn  = Standard VPN servers
+                    p2p   = P2P
+                    obvpn = Obfuscated Servers
 --print-servers     Gets all servers of the selected Country
 --country-codes     Gets all country codes in ISO 3166-1 alpha2 format
 --server            Connects to specified ovpn file server descriptor
 
 Examples:
-nordvpn_cli.py --country=IT --print-servers         Prints all Standard VPN Italian Servers
-nordvpn_cli.py --country=IT                         Connects to the best Italian Server
-nordvpn_cli.py --country-codes                      Prints ISO 3166-1 alpha2 table
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn   Connects to specified server descriptor
+nordvpn_cli.py --country=IT --print-servers             Prints all Standard VPN Italian Servers
+nordvpn_cli.py --country=IT --print-servers --type=p2p  Prints all P2P Italian Servers
+nordvpn_cli.py --country=IT                             Connects to the best Italian Server
+nordvpn_cli.py --country=IT --type=svpn                 Connects to the best Standard VPN Italian server
+nordvpn_cli.py --country-codes                          Prints ISO 3166-1 alpha2 table
+nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn       Connects to specified server descriptor
 '''
 
 
@@ -202,8 +212,8 @@ def check_nordvpn_config_folder():
     return os.path.exists(__NORDVPN_CONFIG_CLI_PATH__)
 
 
-def fetch_nordvpn_server(server_type=__NORDVPN_SERVER_TYPES__[3],
-                         server_country=__NORDVPN_SERVER_COUNTRY__['us'],
+def fetch_nordvpn_server(server_type,
+                         server_country,
                          server_sort={'enable':False, 'key':None, 'reverse':False}):
     """
     Gets the NordVPN servers State
@@ -214,6 +224,11 @@ def fetch_nordvpn_server(server_type=__NORDVPN_SERVER_TYPES__[3],
     """
 
     result = {}
+    # Sets the default parameter if are none
+    server_type = __NORDVPN_SERVER_TYPES__['svpn'] if server_type is None \
+                                                   else __NORDVPN_SERVER_TYPES__[server_type]
+    server_country = __NORDVPN_SERVER_COUNTRY__['us'] if server_country is None else server_country
+
     query_string = {'group' : server_type, 'country' : __NORDVPN_SERVER_COUNTRY__[server_country], \
                     'action' : 'getGroupRows'}
     full_url = "{base_url_api}{querystring}".format(base_url_api=__NORDVPN_REST_API_URL__, \
@@ -334,7 +349,8 @@ def main():
         print_country_codes_table(__NORDVPN_SERVER_COUNTRY__)
  
     elif nordvpn_country is not None and print_servers is not None:
-        country_servers = fetch_nordvpn_server(server_country=nordvpn_country)
+        country_servers = fetch_nordvpn_server(server_country=nordvpn_country,
+                                               server_type=nordvpn_type)
         if country_servers is not None:
             print_servers_table(country_servers)
 
@@ -342,6 +358,7 @@ def main():
          print_servers is None:
 
         country_servers = fetch_nordvpn_server(server_country=nordvpn_country,
+                                               server_type=nordvpn_type,
                                                server_sort={'enable':True, 'key':'load', 'reverse':False})
 
         if country_servers is not None:
@@ -354,17 +371,19 @@ if __name__ == "__main__":
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hs:c:",
-                                   ["server=", "country=", "print-servers", \
-                                    "country-codes"])
+                                   "hs:c:t:",
+                                   ["server=", "country=", "type=", \
+                                    "country-codes","print-servers"])
         for opt, arg in opts:
             if opt == '-h':
                 print_usage()
                 sys.exit()
-            elif opt in ("-c", "--country"):
-                nordvpn_country = str(arg).lower()
             elif opt in ("-s", "--server"):
                 nordvpn_server = arg
+            elif opt in ("-c", "--country"):
+                nordvpn_country = str(arg).lower()
+            elif opt in ("-t", "--type"):
+                nordvpn_type = str(arg).lower()
             elif opt == '--print-servers':
                 print_servers = True
             elif opt == '--country-codes':

@@ -22,7 +22,7 @@ With root account, set the execution and SUID bits, otherwise use the sudo comma
 ```
 This step is required because openvpn must be used with root privilegies
 
-Check the execution running ```./nordvpn_cli.py -h```. You will see an output like this if your is correct:
+Check the execution running ```./nordvpn_cli.py -h```. You will see an output like this if your installation is correct:
 ```bash
 Sintax: nordvpn_cli.py [--country=COUNTRY][--print-servers][--country-codes][--server=]
 

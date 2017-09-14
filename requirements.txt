@@ -1,0 +1,4 @@
+subprocess32==3.2.7
+urllib3==1.19.1
+requests==2.12.4
+terminaltables==3.1.0

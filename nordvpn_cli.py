@@ -1,4 +1,4 @@
-#!/usr/sbin/python
+#!/usr/bin/python
 # coding: utf-8
 
 """NordVPN_CLI
@@ -32,7 +32,7 @@ from terminaltables import AsciiTable
 
 
 # Defines
-__VERSION__ = "0.0.1alpha"
+__VERSION__ = "1.0.0"
 __AUTHOR__ = "killerbyte"
 __AUTHOR_EMAIL__ = "killerbyte[at]protonmail[dot]com"
 __AUTHOR_TWITTER__ = "@killerbyte"
@@ -137,13 +137,14 @@ def print_banner():
     print 'Author: {author}'.format(author=__AUTHOR__)
     print 'Email: {author_email}'.format(author_email=__AUTHOR_EMAIL__)
     print 'Twitter: {author_twitter}'.format(author_twitter=__AUTHOR_TWITTER__)
+    print
 
 def print_usage():
     """
     Prints the software usage
     """
     print '''
-Sintax: nordvpn_cli.py [--country=COUNTRY][--print-servers][--country-codes][--server=]
+Syntax: nordvpn_cli.py [--country=COUNTRY][--print-servers][--country-codes][--server=]
 
 Options:
 --country           Uses the server with lowest load of the selected Country

@@ -326,7 +326,9 @@ def connect_openvpn(nordvpn_config_file):
                                         openvpn_path=__OPENVPN_PATH__, \
                                         config_path=__NORDVPN_CONFIG_CLI_PATH__, \
                                         config_file=nordvpn_config_file)
-
+    
+    subprocess.call(['bash', '-c', "ip route del 0.0.0.0/1 via 192.168.0.1"])
+    
     subprocess.call(['bash', '-c', command])
 
 def main():

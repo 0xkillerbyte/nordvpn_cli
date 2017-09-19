@@ -54,6 +54,7 @@ __NORDVPN_REST_API_URL__ = "https://nordvpn.com/wp-admin/admin-ajax.php?"
 __NORDVPN_CONFIG_CLI_PATH__ = "/etc/nordvpn_cli/"
 __NORDVPN_CONFIG_CLI_FILE__ = "/etc/nordvpn_cli/config.zip"
 __NORDVPN_CONFIG_PACKAGE_URL__ = "https://nordvpn.com/api/files/zip"
+__KILLSWITCH_SH_PATH__ = 'helper/killswitch.sh'
 
 __NORDVPN_SERVER_COUNTRY__ = {'ch': 'Switzerland',
                               'gr': 'Greece',
@@ -124,9 +125,10 @@ __NORDVPN_SERVER_TYPES__ = {'dvpn':'Double VPN',
 
 nordvpn_country = None
 nordvpn_server = None
-nordvpn_type  = None
+nordvpn_type = None
 print_servers = None
 print_country_codes = None
+killswitch_enable = None
 
 def print_banner():
     """
@@ -158,14 +160,16 @@ Options:
 --print-servers     Gets all servers of the selected Country
 --country-codes     Gets all country codes in ISO 3166-1 alpha2 format
 --server            Connects to specified ovpn file server descriptor
+--killswitch        Enable the killswitch option
 
 Examples:
-nordvpn_cli.py --country=IT --print-servers             Prints all Standard VPN Italian Servers
-nordvpn_cli.py --country=IT --print-servers --type=p2p  Prints all P2P Italian Servers
-nordvpn_cli.py --country=IT                             Connects to the best Italian Server
-nordvpn_cli.py --country=IT --type=svpn                 Connects to the best Standard VPN Italian server
-nordvpn_cli.py --country-codes                          Prints ISO 3166-1 alpha2 table
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn       Connects to specified server descriptor
+nordvpn_cli.py --country=IT --print-servers                     Prints all Standard VPN Italian Servers
+nordvpn_cli.py --country=IT --print-servers --type=p2p          Prints all P2P Italian Servers
+nordvpn_cli.py --country=IT                                     Connects to the best Italian Server
+nordvpn_cli.py --country=IT --type=svpn                         Connects to the best Standard VPN Italian server
+nordvpn_cli.py --country-codes                                  Prints ISO 3166-1 alpha2 table
+nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn               Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn --killswitch  Connects to specified server descriptor
 '''
 
 
@@ -177,6 +181,27 @@ def trace(msg_type, text):
     """
     types = ["[I]", "[W]", "[E]"]
     print "{type} - {message}".format(type=types[msg_type], message=text)
+
+def extract_server_ip_from_ovpn(ovpn_file_path=None):
+    """
+    Gets the nordvpn server ip address from the specified
+    ovpn file
+    :param ovpn_path: The ovpn file
+    :return: The IP address
+    """
+
+    ip_address = None
+    ovpn_content = None
+
+    if ovpn_file_path is not None:
+        full_path = "{config_path}{config_file}".format(config_path=__NORDVPN_CONFIG_CLI_PATH__, \
+                                                        config_file=ovpn_file_path)
+        with open(full_path) as ovpn_file_stream:
+            ovpn_content = ovpn_file_stream.read()
+        if ovpn_content is not None:
+            regex_match = re.search(r"remote (\S+)", ovpn_content)
+            ip_address = regex_match.group(1)
+    return ip_address
 
 def print_country_codes_table(country_codes):
     """
@@ -260,7 +285,7 @@ def fetch_nordvpn_server(server_type,
                 result['servers'] = sorted(result['servers'], \
                                            key=lambda server: server[server_sort['key']], \
                                            reverse=server_sort['reverse'])
-                    
+
 
     return result
 
@@ -321,23 +346,55 @@ def connect_openvpn(nordvpn_config_file):
     Starts OpenVPN with specified nordvpn config file
     :param nordvpn_server: The NordVPN selected server
     """
+
+    # Manages the killswitch
+    if killswitch_enable is True:
+        nordvpn_server_ip = extract_server_ip_from_ovpn(nordvpn_config_file)
+        if nordvpn_server_ip is not None:
+            manage_killswitch(True, nordvpn_server_ip)
+            trace(__INFO_MSG__, "Killswitch enabled!")
+        else:
+            trace(__ERROR_MSG__, "Killswitch not enabled!")
+
     trace(__INFO_MSG__, "Connecting to {} server...".format(nordvpn_config_file))
     command = "{openvpn_path} --config {config_path}{config_file}".format(\
                                         openvpn_path=__OPENVPN_PATH__, \
                                         config_path=__NORDVPN_CONFIG_CLI_PATH__, \
                                         config_file=nordvpn_config_file)
-    
-    subprocess.call(['bash', '-c', "ip route del 0.0.0.0/1 via 192.168.0.1"])
-    
-    subprocess.call(['bash', '-c', command])
+
+    try:
+        subprocess.call(['bash', '-c', command])
+    except KeyboardInterrupt:
+        pass
+
+    if killswitch_enable is True:
+        if nordvpn_server_ip is not None:
+            manage_killswitch(False, nordvpn_server_ip)
+            trace(__INFO_MSG__, "Killswitch disabled!")
+        else:
+            trace(__ERROR_MSG__, "Killswitch not disabled!")
+
+def manage_killswitch(is_enable=None, domain=None):
+    """
+    Manages the killswitch setting
+    :param is_enable: True add route rule, False delete route rule
+    """
+
+    if is_enable is not None:
+        if is_enable is True:
+            subprocess.call(['bash', '-c', '{} -a {}'.format(__KILLSWITCH_SH_PATH__, \
+                                                             domain)])
+        else:
+            subprocess.call(['bash', '-c', '{} -d {}'.format(__KILLSWITCH_SH_PATH__,
+                                                             domain)])
 
 def main():
     """
     Main Function
     """
-    
+
     print_banner()
-    
+
     is_openvpn_present = check_openvpn(__OPENVPN_PATH__)
 
     if is_openvpn_present is True:
@@ -350,7 +407,7 @@ def main():
 
     if print_country_codes is True:
         print_country_codes_table(__NORDVPN_SERVER_COUNTRY__)
- 
+
     elif nordvpn_country is not None and print_servers is not None:
         country_servers = fetch_nordvpn_server(server_country=nordvpn_country,
                                                server_type=nordvpn_type)
@@ -362,7 +419,9 @@ def main():
 
         country_servers = fetch_nordvpn_server(server_country=nordvpn_country,
                                                server_type=nordvpn_type,
-                                               server_sort={'enable':True, 'key':'load', 'reverse':False})
+                                               server_sort={'enable':True, \
+                                                            'key':'load', \
+                                                            'reverse':False})
 
         if country_servers is not None:
             connect_openvpn(country_servers['servers'][0]['feature']['tcp_file'])
@@ -374,9 +433,9 @@ if __name__ == "__main__":
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hs:c:t:",
+                                   "hs:c:t:k",
                                    ["server=", "country=", "type=", \
-                                    "country-codes","print-servers"])
+                                    "country-codes", "print-servers", "killswitch"])
         for opt, arg in opts:
             if opt == '-h':
                 print_usage()
@@ -391,9 +450,13 @@ if __name__ == "__main__":
                 print_servers = True
             elif opt == '--country-codes':
                 print_country_codes = True
+            elif opt in ("-k", "--killswitch"):
+                killswitch_enable = True
 
         main()
+    except KeyboardInterrupt:
+        trace(__INFO_MSG__, "Closing application")
 
-    except getopt.GetoptError:
+    except getopt.GetoptError as exce:
         print_usage()
         sys.exit(__ARGUMENT_PARSING_ERROR__)

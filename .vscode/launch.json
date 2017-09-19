@@ -17,10 +17,11 @@
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",
-                "RedirectOutput"
+                "RedirectOutput",
+                "Sudo"
             ],
             "args": [
-                "--country=IT", "--print-servers", "--type=svpn"
+                "--server=it5.nordvpn.com.tcp443.ovpn", "--killswitch"
             ]
         },
         {

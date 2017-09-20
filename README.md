@@ -1,4 +1,6 @@
 # NordVPN_Cli - GNU/Linux NordVPN Client
+![python_shields](https://img.shields.io/badge/python-2.7-blue.svg) ![pep8_shields](https://img.shields.io/badge/PEP%208-compliant-brightgreen.svg) ![build_pass](https://img.shields.io/travis/rust-lang/rust.svg) ![build_stable](https://img.shields.io/pypi/status/Django.svg)
+
 
 NordVPN_Cli is an unofficial bash application written in python that helps you to configure and manage all NordVPN servers. 
 
@@ -46,29 +48,10 @@ nordvpn_cli.py --country=IT                             Connects to the best Ita
 nordvpn_cli.py --country=IT --type=svpn                 Connects to the best Standard VPN Italian server
 nordvpn_cli.py --country-codes                          Prints ISO 3166-1 alpha2 table
 nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn       Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn --killswitch  Connects to specified server descriptor
 ```
 NordVPN_Cli is ready to use! :+1:
 
-### Example of connection:
+### Example:
 
-```bash 
-$ ./nordvpn_cli.py --country=IT
-NordVPN CLI
-Version: 1.0.0
-Author: killerbyte
-Email: killerbyte[at]protonmail[dot]com
-Twitter: @killerbyte
-
-[I] - OpenVPN Found: OpenVPN 2.4.3
-[I] - Connecting to it13.nordvpn.com.tcp443.ovpn server...
-Thu Sep 14 21:44:28 2017 OpenVPN 2.4.3 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jun 30 2017
-Thu Sep 14 21:44:28 2017 library versions: OpenSSL 1.0.2l  25 May 2017, LZO 2.08
-Enter Auth Username: ************
-Enter Auth Password: ************
-........
-Thu Sep 14 21:44:44 2017 /sbin/ip addr add dev tun0 10.7.7.43/24 broadcast 10.7.7.255
-Thu Sep 14 21:44:44 2017 /sbin/ip route add 95.141.36.10/32 via 192.168.1.1
-Thu Sep 14 21:44:44 2017 /sbin/ip route add 0.0.0.0/1 via 10.7.7.1
-Thu Sep 14 21:44:44 2017 /sbin/ip route add 128.0.0.0/1 via 10.7.7.1
-Thu Sep 14 21:44:44 2017 Initialization Sequence Completed
-```
+[![asciicast](https://asciinema.org/a/2M8XTCKvz4IZw2t1ybEUk4BC9.png)](https://asciinema.org/a/2M8XTCKvz4IZw2t1ybEUk4BC9)

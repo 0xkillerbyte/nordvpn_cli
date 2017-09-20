@@ -1,5 +1,7 @@
 # NordVPN_Cli - GNU/Linux NordVPN Client
-![python_shields](https://img.shields.io/badge/python-2.7-blue.svg) ![pep8_shields](https://img.shields.io/badge/PEP%208-compliant-brightgreen.svg) [![Travis](https://img.shields.io/travis/rust-lang/rust.svg)]() [![PyPI](https://img.shields.io/pypi/status/Django.svg)]()
+![python_shields](https://img.shields.io/badge/python-2.7-blue.svg) ![pep8_shields](https://img.shields.io/badge/PEP%208-compliant-brightgreen.svg) ![build_pass](https://img.shields.io/travis/rust-lang/rust.svg) ![build_stable](https://img.shields.io/pypi/status/Django.svg)
+
+
 NordVPN_Cli is an unofficial bash application written in python that helps you to configure and manage all NordVPN servers. 
 
 ### Requirements

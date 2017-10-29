@@ -21,7 +21,7 @@
                 "Sudo"
             ],
             "args": [
-                "--server=it5.nordvpn.com.tcp443.ovpn", "--killswitch"
+                "--country=DE", "--print-servers"
             ]
         },
         {

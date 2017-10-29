@@ -19,6 +19,7 @@ along with NordVPN_CLI.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import shutil
 import zipfile
 import re
 import subprocess
@@ -52,8 +53,10 @@ __DOWNLOAD_CONFIG_ERROR__ = 3
 __OPENVPN_PATH__ = "/usr/sbin/openvpn"
 __NORDVPN_REST_API_URL__ = "https://nordvpn.com/wp-admin/admin-ajax.php?"
 __NORDVPN_CONFIG_CLI_PATH__ = "/etc/nordvpn_cli/"
+__NORDVPN_CONFIG_CLI_TCP_FILES__ = "/etc/nordvpn_cli/ovpn_tcp/"
+__NORDVPN_CONFIG_CLI_UDP_FILES__ = "/etc/nordvpn_cli/ovpn_udp/"
 __NORDVPN_CONFIG_CLI_FILE__ = "/etc/nordvpn_cli/config.zip"
-__NORDVPN_CONFIG_PACKAGE_URL__ = "https://nordvpn.com/api/files/zip"
+__NORDVPN_CONFIG_PACKAGE_URL__ = "http://downloads.nordcdn.com/configs/archives/servers/ovpn.zip"
 __KILLSWITCH_SH_PATH__ = 'helper/killswitch.sh'
 
 __NORDVPN_SERVER_COUNTRY__ = {'ch': 'Switzerland',
@@ -168,8 +171,8 @@ nordvpn_cli.py --country=IT --print-servers --type=p2p          Prints all P2P I
 nordvpn_cli.py --country=IT                                     Connects to the best Italian Server
 nordvpn_cli.py --country=IT --type=svpn                         Connects to the best Standard VPN Italian server
 nordvpn_cli.py --country-codes                                  Prints ISO 3166-1 alpha2 table
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn               Connects to specified server descriptor
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn --killswitch  Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp.ovpn                  Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp.ovpn --killswitch     Connects to specified server descriptor
 '''
 
 
@@ -270,13 +273,13 @@ def fetch_nordvpn_server(server_type,
             for server in result['servers']:
                 if server['feature']['openvpn_tcp'] is True:
                     server['feature']['tcp_file'] = "{}{}".format(server['domain'],\
-                                                                       ".tcp443.ovpn")
+                                                                       ".tcp.ovpn")
                 else:
                     server['feature']['tcp_file'] = "n.d."
 
                 if server['feature']['openvpn_udp'] is True:
                     server['feature']['udp_file'] = "{}{}".format(server['domain'], \
-                                                                 ".udp1194.ovpn")
+                                                                 ".udp.ovpn")
                 else:
                     server['feature']['udp_file'] = "n.d."
 
@@ -296,7 +299,6 @@ def download_nordvpn_config():
     """
     result = False
     try:
-        #if os.path.exists(__NORDVPN_CONFIG_CLI_PATH__) is not True:
         is_config_folder_present = check_nordvpn_config_folder()
         if is_config_folder_present is not True:
             os.mkdir(__NORDVPN_CONFIG_CLI_PATH__)
@@ -312,6 +314,21 @@ def download_nordvpn_config():
             zip_ref = zipfile.ZipFile(__NORDVPN_CONFIG_CLI_FILE__, 'r')
             zip_ref.extractall(__NORDVPN_CONFIG_CLI_PATH__)
             zip_ref.close()
+
+            # Flats the files
+            tcp_files = os.listdir(__NORDVPN_CONFIG_CLI_TCP_FILES__)
+            udp_files = os.listdir(__NORDVPN_CONFIG_CLI_UDP_FILES__)
+
+            for tcp_file in tcp_files:
+                tcp_file = "{path}{filename}".format(path=__NORDVPN_CONFIG_CLI_TCP_FILES__, \
+                                                     filename=tcp_file)
+                shutil.move(tcp_file, __NORDVPN_CONFIG_CLI_PATH__)
+
+            for udp_file in udp_files:
+                udp_file = "{path}{filename}".format(path=__NORDVPN_CONFIG_CLI_UDP_FILES__, \
+                                                     filename=udp_file)
+                shutil.move(udp_file, __NORDVPN_CONFIG_CLI_PATH__)
+
         result = True
 
     except OSError as os_error:

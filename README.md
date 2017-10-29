@@ -47,8 +47,8 @@ nordvpn_cli.py --country=IT --print-servers --type=p2p  Prints all P2P Italian S
 nordvpn_cli.py --country=IT                             Connects to the best Italian Server
 nordvpn_cli.py --country=IT --type=svpn                 Connects to the best Standard VPN Italian server
 nordvpn_cli.py --country-codes                          Prints ISO 3166-1 alpha2 table
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn       Connects to specified server descriptor
-nordvpn_cli.py --server=it123.nordvpn.tcp443.ovpn --killswitch  Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp.ovpn       Connects to specified server descriptor
+nordvpn_cli.py --server=it123.nordvpn.tcp.ovpn --killswitch  Connects to specified server descriptor
 ```
 NordVPN_Cli is ready to use! :+1:
 
